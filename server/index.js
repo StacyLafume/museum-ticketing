@@ -36,6 +36,11 @@ app.get("/api/events", (req, res) => {
   })));
 });
 
+app.get("/", (req, res) => {
+    res.send("Welcome to the Museum Ticketing API!");
+    console.log("Welcome to the Museum Ticketing API!");
+});
+
 app.post("/api/reservations", (req, res) => {
   const { eventId, name, email, quantity } = req.body;
 
@@ -81,10 +86,14 @@ app.post("/api/reservations", (req, res) => {
   };
 
   reservations.push(reservation);
-
+  console.log("🎟️ New reservation received!");
+  console.log(reservation);
+  console.log("Total reservations:", reservations.length);
   res.status(201).json(reservation);
+  
 });
 
 app.listen(PORT, () => {
   console.log(`✨ 🎟️ API magic running on http://localhost:${PORT} ✨`);
+
 });

@@ -29,37 +29,52 @@ const App = () => {
 
   const total = selectedEvent ? selectedEvent.price * quantity : 0;
 
-  const handleReservation = (e) => {
+  const handleReservation = async (e) => {
     e.preventDefault();
+    console.log("🎟️ Reservation button clicked!");
 
-    if (!selectedEvent || quantity > selectedEvent.capacity) {
-      return;
+    if (!selectedEvent) return;
+
+    try {
+      const response = await fetch("http://localhost:3001/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eventId: selectedEvent.id,
+          name,
+          email,
+          quantity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "Reservation failed");
+        return;
+      }
+
+      setConfirmation(data);
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error("Reservation error:", error);
+      alert("Could not connect to the ticketing server.");
     }
-
-    const reservation = {
-      id: crypto.randomUUID(),
-      event: selectedEvent.title,
-      name,
-      email,
-      quantity,
-      total,
-    };
-
-    setConfirmation(reservation);
-    setSelectedEvent(null);
   };
 
-  function selectEvent(event) {
+  const selectEvent = (event) => {
     setSelectedEvent(event);
     setConfirmation(null);
     setName("");
     setEmail("");
     setQuantity(1);
-  }
+  };
 
   return (
     <main>
-      <h1>🎟️ OpenAdmission</h1>
+      <h1>🎟️ Open Admission 🎟️</h1>
       <p>Discover and reserve your next science experience.</p>
 
       <section className="events">
@@ -110,7 +125,6 @@ const App = () => {
             />
 
             <h3>Total: ${total.toFixed(2)}</h3>
-
             <button type="submit">Confirm Reservation</button>
             <button type="button" onClick={() => setSelectedEvent(null)}>
               Cancel
