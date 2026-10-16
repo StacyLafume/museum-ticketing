@@ -1,24 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import AdmissionTicket from "./components/AdmissionTicket";
 import "./App.css";
 
-const events = [
-  {
-    id: 1,
-    title: "Planetarium Experience",
-    date: "October 25, 2026",
-    time: "2:00 PM",
-    price: 15,
-    capacity: 50,
-  },
-  {
-    id: 2,
-    title: "Science After Dark",
-    date: "October 30, 2026",
-    time: "7:00 PM",
-    price: 25,
-    capacity: 100,
-  },
-];
+const events = [];
 
 const App = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -26,6 +10,9 @@ const App = () => {
   const [email, setEmail] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [confirmation, setConfirmation] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const total = selectedEvent ? selectedEvent.price * quantity : 0;
 
@@ -58,11 +45,35 @@ const App = () => {
 
       setConfirmation(data);
       setSelectedEvent(null);
+      await loadEvents();
     } catch (error) {
       console.error("Reservation error:", error);
       alert("Could not connect to the ticketing server.");
     }
   };
+  const loadEvents = async () => {
+    try {
+      setError("");
+
+      const response = await fetch("http://localhost:3001/api/events");
+
+      if (!response.ok) {
+        throw new Error("Failed to load events");
+      }
+
+      const data = await response.json();
+      setEvents(data);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load museum events.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
 
   const selectEvent = (event) => {
     setSelectedEvent(event);
@@ -76,7 +87,8 @@ const App = () => {
     <main>
       <h1>🎟️ Open Admission 🎟️</h1>
       <p>Discover and reserve your next science experience.</p>
-
+      {loading && <p>Loading events...</p>}
+      {error && <p role="alert">{error}</p>}
       <section className="events">
         {events.map((event) => (
           <article className="event-card" key={event.id}>
@@ -85,8 +97,13 @@ const App = () => {
               {event.date} at {event.time}
             </p>
             <p>${event.price} per ticket</p>
-            <p>{event.capacity} tickets available</p>
-            <button onClick={() => selectEvent(event)}>Reserve Ticket</button>
+            <p>{event.available} tickets remaining</p>
+            <button
+              disabled={event.available === 0}
+              onClick={() => selectEvent(event)}
+            >
+              {event.available === 0 ? "Sold Out" : "Reserve Ticket"}
+            </button>{" "}
           </article>
         ))}
       </section>
@@ -118,7 +135,7 @@ const App = () => {
               id="ticket-quantity"
               type="number"
               min="1"
-              max={selectedEvent.capacity}
+              max={selectedEvent.available}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               required
@@ -135,14 +152,7 @@ const App = () => {
 
       {confirmation && (
         <section className="confirmation" role="status">
-          <h2>Reservation Confirmed! 🎉</h2>
-          <p>Thank you, {confirmation.name}.</p>
-          <p>Event: {confirmation.event}</p>
-          <p>Tickets: {confirmation.quantity}</p>
-          <p>Total: ${confirmation.total.toFixed(2)}</p>
-          <p>
-            Confirmation: <code>{confirmation.id}</code>
-          </p>
+          <AdmissionTicket reservation={confirmation} />
         </section>
       )}
     </main>

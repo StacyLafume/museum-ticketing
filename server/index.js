@@ -10,18 +10,22 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 const events = [
-  {
-    id: 1,
-    title: "Planetarium Experience",
-    price: 15,
-    capacity: 50,
-  },
-  {
-    id: 2,
-    title: "Science After Dark",
-    price: 25,
-    capacity: 100,
-  },
+ {
+  id: 1,
+  title: "Planetarium Experience",
+  date: "October 25, 2026",
+  time: "2:00 PM",
+  price: 15,
+  capacity: 50
+},
+{
+  id: 2,
+  title: "Science After Dark",
+  date: "October 30, 2026",
+  time: "7:00 PM",
+  price: 25,
+  capacity: 100
+}
 ];
 
 const reservations = [];
@@ -89,6 +93,11 @@ app.post("/api/reservations", (req, res) => {
   console.log("🎟️ New reservation received!");
   console.log(reservation);
   console.log("Total reservations:", reservations.length);
+  console.log("Reservation created:", {
+  reservationId: reservation.id,
+  eventId: reservation.eventId,
+  quantity: reservation.quantity
+});
   res.status(201).json(reservation);
   
 });

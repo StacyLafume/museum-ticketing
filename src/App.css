@@ -271,3 +271,50 @@ code {
   overflow-wrap: anywhere;
 }
 
+
+.admission-ticket {
+  max-width: 460px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #91b5d8;
+  color: #0f172a;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.ticket-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #475569;
+}
+
+.admission-ticket h2 {
+  margin: 20px 0;
+}
+
+.admission-ticket h3 {
+  color: #334155;
+}
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin: 24px auto;
+  background: white;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.ticket-code {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+  font-size: 12px;
+  color: #475569;
+}
+
+.ticket-note {
+  font-size: 13px;
+  color: #64748b;
+}
