@@ -30,6 +30,7 @@ const events = [
 
 const reservations = [];
 
+
 app.get("/api/events", (req, res) => {
   res.json(events.map(event => ({
     ...event,
@@ -87,6 +88,8 @@ app.post("/api/reservations", (req, res) => {
     email: email.trim(),
     quantity,
     total: event.price * quantity,
+    checkedIn: false,
+    checkedInAt: null,
   };
 
   reservations.push(reservation);
@@ -101,6 +104,73 @@ app.post("/api/reservations", (req, res) => {
   res.status(201).json(reservation);
   
 });
+
+
+app.get("/api/tickets/:ticketId", (req, res) => {
+  const { ticketId } = req.params;
+
+  const reservation = reservations.find(
+    (r) => r.id === ticketId
+  );
+
+  if (!reservation) {
+    return res.status(404).json({
+      valid: false,
+      message: "Ticket not found",
+    });
+  }
+
+  res.status(200).json({
+    valid: true,
+    message: "Valid ticket",
+    ticket: {
+      id: reservation.id,
+      event: reservation.event,
+      quantity: reservation.quantity,
+      status: "valid",
+    },
+  });
+});
+
+app.post("/api/tickets/:ticketId/check-in", (req, res) => {
+  const { ticketId } = req.params;
+
+  const reservation = reservations.find(
+    (r) => r.id === ticketId
+  );
+
+  if (!reservation) {
+    return res.status(404).json({
+      success: false,
+      message: "Ticket not found",
+    });
+  }
+
+  if (reservation.checkedIn) {
+    return res.status(409).json({
+      success: false,
+      message: "Ticket already checked in",
+      checkedInAt: reservation.checkedInAt,
+    });
+  }
+
+  reservation.checkedIn = true;
+  reservation.checkedInAt = new Date().toISOString();
+
+  console.log("🎟️ Ticket checked in:", reservation.id);
+
+  res.status(200).json({
+    success: true,
+    message: "Admission approved",
+    ticket: {
+      id: reservation.id,
+      event: reservation.event,
+      quantity: reservation.quantity,
+      checkedInAt: reservation.checkedInAt,
+    },
+  });
+});
+
 
 app.listen(PORT, () => {
   console.log(`✨ 🎟️ API magic running on http://localhost:${PORT} ✨`);
